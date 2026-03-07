@@ -1,37 +1,45 @@
 <template>
   <div class="chart-container">
-    <div class="chart-header">
-      <h3>{{ title }}</h3>
-      <select v-model="selectedDataType" class="data-select">
-        <option v-for="type in dataTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
-        </option>
-      </select>
-    </div>
-    <div class="chart-content">
-      <div class="data-stats">
-        <div class="stat-item" v-for="(stat, index) in statistics" :key="index">
-          <div class="stat-value">{{ stat.value }}</div>
-          <div class="stat-label">{{ stat.label }}</div>
-        </div>
+    <div class="card">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h3 class="h6 mb-0">{{ title }}</h3>
+        <select v-model="selectedDataType" class="form-select form-select-sm w-auto">
+          <option v-for="type in dataTypes" :key="type.value" :value="type.value">
+            {{ type.label }}
+          </option>
+        </select>
       </div>
-      <div class="data-table">
-        <table>
-          <thead>
-            <tr>
-              <th v-for="column in tableColumns" :key="column.key">
-                {{ column.label }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in tableData" :key="index">
-              <td v-for="column in tableColumns" :key="column.key">
-                {{ item[column.key] }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card-body">
+        <div class="data-stats mb-4">
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6" v-for="(stat, index) in statistics" :key="index">
+              <div class="stat-item bg-light rounded p-3 text-center shadow-sm">
+                <div class="stat-value h4 text-primary font-weight-bold">{{ stat.value }}</div>
+                <div class="stat-label text-muted small">{{ stat.label }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="data-table">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="bg-light">
+                <tr>
+                  <th v-for="column in tableColumns" :key="column.key" class="text-center">
+                    {{ column.label }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in tableData" :key="index">
+                  <td v-for="column in tableColumns" :key="column.key" class="text-center">
+                    {{ item[column.key] }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -73,13 +81,53 @@ export default {
 
     // 模拟表格数据
     const tableData = computed(() => {
-      return props.data.length > 0 ? props.data : [
-        { name: '北京市', value: '2189', unit: '万人', updateTime: '2023-12-31' },
-        { name: '上海市', value: '2487', unit: '万人', updateTime: '2023-12-31' },
-        { name: '广州市', value: '1530', unit: '万人', updateTime: '2023-12-31' },
-        { name: '深圳市', value: '1756', unit: '万人', updateTime: '2023-12-31' },
-        { name: '杭州市', value: '1220', unit: '万人', updateTime: '2023-12-31' }
-      ]
+      if (props.data.length > 0) {
+        return props.data
+      }
+
+      // 根据选择的数据类型返回不同的数据
+      switch (selectedDataType.value) {
+        case 'population':
+          return [
+            { name: '北京市', value: '2189', unit: '万人', updateTime: '2023-12-31' },
+            { name: '上海市', value: '2487', unit: '万人', updateTime: '2023-12-31' },
+            { name: '广州市', value: '1530', unit: '万人', updateTime: '2023-12-31' },
+            { name: '深圳市', value: '1756', unit: '万人', updateTime: '2023-12-31' },
+            { name: '杭州市', value: '1220', unit: '万人', updateTime: '2023-12-31' }
+          ]
+        case 'economy':
+          return [
+            { name: '北京市', value: '41611', unit: '亿元', updateTime: '2023-12-31' },
+            { name: '上海市', value: '43214', unit: '亿元', updateTime: '2023-12-31' },
+            { name: '广州市', value: '28232', unit: '亿元', updateTime: '2023-12-31' },
+            { name: '深圳市', value: '32388', unit: '亿元', updateTime: '2023-12-31' },
+            { name: '杭州市', value: '18753', unit: '亿元', updateTime: '2023-12-31' }
+          ]
+        case 'traffic':
+          return [
+            { name: '北京市', value: '892', unit: '万辆/日', updateTime: '2023-12-31' },
+            { name: '上海市', value: '956', unit: '万辆/日', updateTime: '2023-12-31' },
+            { name: '广州市', value: '783', unit: '万辆/日', updateTime: '2023-12-31' },
+            { name: '深圳市', value: '721', unit: '万辆/日', updateTime: '2023-12-31' },
+            { name: '杭州市', value: '589', unit: '万辆/日', updateTime: '2023-12-31' }
+          ]
+        case 'environment':
+          return [
+            { name: '北京市', value: '78', unit: '分', updateTime: '2023-12-31' },
+            { name: '上海市', value: '82', unit: '分', updateTime: '2023-12-31' },
+            { name: '广州市', value: '85', unit: '分', updateTime: '2023-12-31' },
+            { name: '深圳市', value: '88', unit: '分', updateTime: '2023-12-31' },
+            { name: '杭州市', value: '90', unit: '分', updateTime: '2023-12-31' }
+          ]
+        default:
+          return [
+            { name: '北京市', value: '2189', unit: '万人', updateTime: '2023-12-31' },
+            { name: '上海市', value: '2487', unit: '万人', updateTime: '2023-12-31' },
+            { name: '广州市', value: '1530', unit: '万人', updateTime: '2023-12-31' },
+            { name: '深圳市', value: '1756', unit: '万人', updateTime: '2023-12-31' },
+            { name: '杭州市', value: '1220', unit: '万人', updateTime: '2023-12-31' }
+          ]
+      }
     })
 
     // 统计数据
@@ -101,7 +149,7 @@ export default {
     // 监听数据类型变化
     watch(selectedDataType, (newType) => {
       console.log('切换数据类型:', newType)
-      // 这里可以根据数据类型切换不同的数据源
+      // 数据类型变化时，tableData和statistics会自动更新
     })
 
     return {
@@ -117,111 +165,15 @@ export default {
 
 <style scoped>
 .chart-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  margin-top: 20px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.chart-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #333;
-  font-weight: 600;
-}
-
-.data-select {
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-
-.data-select:hover {
-  border-color: #409eff;
-}
-
-.chart-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.data-stats {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .stat-item {
-  flex: 1;
-  min-width: 120px;
-  background: #f8f9fa;
-  padding: 16px;
-  border-radius: 6px;
-  text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .stat-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #409eff;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-
-.data-table {
-  overflow-x: auto;
-}
-
-.data-table table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.data-table th,
-.data-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-.data-table th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
-}
-
-.data-table tr:hover {
-  background-color: #f5f7fa;
-}
-
-.data-table tr:nth-child(even) {
-  background-color: #fafafa;
 }
 </style>

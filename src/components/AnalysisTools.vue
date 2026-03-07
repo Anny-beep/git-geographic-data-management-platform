@@ -1,282 +1,259 @@
 <template>
   <div class="analysis-tools">
-    <div class="page-header">
-      <h1>分析工具</h1>
-      <p>使用专业工具分析地理信息数据</p>
+    <div class="page-header text-center mb-5 pb-3 border-bottom">
+      <h1 class="display-6">分析工具</h1>
+      <p class="text-muted">使用专业工具分析地理信息数据</p>
     </div>
 
     <!-- 工具分类 -->
-    <div class="tool-categories">
-      <div 
-        class="category-card" 
-        v-for="category in toolCategories" 
-        :key="category.value"
-        :class="{ active: activeCategory === category.value }"
-        @click="activeCategory = category.value"
-      >
-        <div class="category-icon">{{ category.icon }}</div>
-        <div class="category-content">
-          <h3>{{ category.label }}</h3>
-          <p>{{ category.description }}</p>
+    <div class="tool-categories mb-5">
+      <div class="row g-4">
+        <div 
+          class="category-card col-md-3 col-sm-6" 
+          v-for="category in toolCategories" 
+          :key="category.value"
+          :class="{ active: activeCategory === category.value }"
+          @click="activeCategory = category.value"
+        >
+          <div class="card h-100 border-2 hover-shadow">
+            <div class="card-body text-center p-4">
+              <div class="category-icon fs-1 mb-3">{{ category.icon }}</div>
+              <div class="category-content">
+                <h3 class="h5 mb-2">{{ category.label }}</h3>
+                <p class="text-muted small">{{ category.description }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 工具详情 -->
-    <div class="tool-details">
-      <div class="section-header">
-        <h2>{{ currentCategory?.label || '选择分析工具' }}</h2>
+    <div class="tool-details card shadow-sm rounded-lg mb-5">
+      <div class="card-header bg-light">
+        <h2 class="h5 mb-0">{{ currentCategory?.label || '选择分析工具' }}</h2>
       </div>
+      <div class="card-body">
+        <!-- 路径规划工具 -->
+        <div v-if="activeCategory === 'route'" class="tool-panel">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="tool-form card bg-light p-4 rounded-lg">
+                <div class="form-group mb-3">
+                  <label class="form-label">起点</label>
+                  <input type="text" v-model="routeStart" class="form-control" placeholder="输入起点地址" />
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">终点</label>
+                  <input type="text" v-model="routeEnd" class="form-control" placeholder="输入终点地址" />
+                </div>
+                <div class="form-group mb-4">
+                  <label class="form-label">出行方式</label>
+                  <select v-model="routeMode" class="form-select">
+                    <option value="drive">驾车</option>
+                    <option value="walk">步行</option>
+                    <option value="bike">骑行</option>
+                    <option value="transit">公交</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary w-100" @click="calculateRoute">
+                  计算路线
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="tool-result card bg-light p-4 rounded-lg">
+                <h3 class="h6 mb-3">路线规划结果</h3>
+                <div v-if="routeResult" class="result-content bg-white p-3 rounded border">
+                  <div class="result-item d-flex justify-content-between py-2 border-bottom" v-for="(item, key) in routeResult" :key="key">
+                    <span class="result-label text-muted">{{ key === 'distance' ? '总距离:' : key === 'duration' ? '预计时间:' : key === 'mode' ? '出行方式:' : '路线详情:' }}</span>
+                    <span class="result-value font-weight-medium">{{ item }}</span>
+                  </div>
+                </div>
+                <div v-else class="result-placeholder d-flex flex-column align-items-center justify-content-center p-5 bg-white rounded border border-dashed">
+                  <span class="fs-1 mb-3">🗺️</span>
+                  <p class="text-muted text-center">点击"计算路线"查看规划结果</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <!-- 路径规划工具 -->
-      <div v-if="activeCategory === 'route'" class="tool-panel">
-        <div class="tool-form">
-          <div class="form-group">
-            <label>起点</label>
-            <input type="text" v-model="routeStart" placeholder="输入起点地址" />
-          </div>
-          <div class="form-group">
-            <label>终点</label>
-            <input type="text" v-model="routeEnd" placeholder="输入终点地址" />
-          </div>
-          <div class="form-group">
-            <label>出行方式</label>
-            <select v-model="routeMode">
-              <option value="drive">驾车</option>
-              <option value="walk">步行</option>
-              <option value="bike">骑行</option>
-              <option value="transit">公交</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" @click="calculateRoute">
-            计算路线
-          </button>
-        </div>
-        <div class="tool-result">
-          <h3>路线规划结果</h3>
-          <div v-if="routeResult" class="result-content">
-            <div class="result-item">
-              <span class="result-label">总距离:</span>
-              <span class="result-value">{{ routeResult.distance }}</span>
+        <!-- 区域分析工具 -->
+        <div v-else-if="activeCategory === 'area'" class="tool-panel">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="tool-form card bg-light p-4 rounded-lg">
+                <div class="form-group mb-3">
+                  <label class="form-label">分析区域</label>
+                  <input type="text" v-model="areaName" class="form-control" placeholder="输入区域名称" />
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">分析类型</label>
+                  <select v-model="areaAnalysisType" class="form-select">
+                    <option value="population">人口分布</option>
+                    <option value="economy">经济活力</option>
+                    <option value="facility">设施密度</option>
+                    <option value="environment">环境质量</option>
+                  </select>
+                </div>
+                <div class="form-group mb-4">
+                  <label class="form-label">分析半径</label>
+                  <input type="number" v-model="areaRadius" class="form-control" placeholder="输入分析半径(米)" />
+                </div>
+                <button class="btn btn-primary w-100" @click="analyzeArea">
+                  分析区域
+                </button>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">预计时间:</span>
-              <span class="result-value">{{ routeResult.duration }}</span>
+            <div class="col-md-6">
+              <div class="tool-result card bg-light p-4 rounded-lg">
+                <h3 class="h6 mb-3">区域分析结果</h3>
+                <div v-if="areaResult" class="result-content bg-white p-3 rounded border">
+                  <div class="result-item d-flex justify-content-between py-2 border-bottom" v-for="(item, key) in areaResult" :key="key">
+                    <span class="result-label text-muted">{{ key === 'area' ? '分析区域:' : key === 'type' ? '分析类型:' : key === 'radius' ? '分析半径:' : key === 'score' ? '分析结果:' : '评价:' }}</span>
+                    <span class="result-value font-weight-medium">{{ item }}{{ key === 'radius' ? ' 米' : key === 'score' ? ' 分' : '' }}</span>
+                  </div>
+                </div>
+                <div v-else class="result-placeholder d-flex flex-column align-items-center justify-content-center p-5 bg-white rounded border border-dashed">
+                  <span class="fs-1 mb-3">📊</span>
+                  <p class="text-muted text-center">点击"分析区域"查看分析结果</p>
+                </div>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">出行方式:</span>
-              <span class="result-value">{{ routeResult.mode }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">路线详情:</span>
-              <span class="result-value">{{ routeResult.steps }}</span>
-            </div>
-          </div>
-          <div v-else class="result-placeholder">
-            <span>🗺️</span>
-            <p>点击"计算路线"查看规划结果</p>
           </div>
         </div>
-      </div>
 
-      <!-- 区域分析工具 -->
-      <div v-else-if="activeCategory === 'area'" class="tool-panel">
-        <div class="tool-form">
-          <div class="form-group">
-            <label>分析区域</label>
-            <input type="text" v-model="areaName" placeholder="输入区域名称" />
-          </div>
-          <div class="form-group">
-            <label>分析类型</label>
-            <select v-model="areaAnalysisType">
-              <option value="population">人口分布</option>
-              <option value="economy">经济活力</option>
-              <option value="facility">设施密度</option>
-              <option value="environment">环境质量</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>分析半径</label>
-            <input type="number" v-model="areaRadius" placeholder="输入分析半径(米)" />
-          </div>
-          <button class="btn btn-primary" @click="analyzeArea">
-            分析区域
-          </button>
-        </div>
-        <div class="tool-result">
-          <h3>区域分析结果</h3>
-          <div v-if="areaResult" class="result-content">
-            <div class="result-item">
-              <span class="result-label">分析区域:</span>
-              <span class="result-value">{{ areaResult.area }}</span>
+        <!-- 地形分析工具 -->
+        <div v-else-if="activeCategory === 'terrain'" class="tool-panel">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="tool-form card bg-light p-4 rounded-lg">
+                <div class="form-group mb-3">
+                  <label class="form-label">分析区域</label>
+                  <input type="text" v-model="terrainArea" class="form-control" placeholder="输入地形区域" />
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">分析类型</label>
+                  <select v-model="terrainAnalysisType" class="form-select">
+                    <option value="elevation">高程分析</option>
+                    <option value="slope">坡度分析</option>
+                    <option value="aspect">坡向分析</option>
+                    <option value="viewshed">可视域分析</option>
+                  </select>
+                </div>
+                <div class="form-group mb-4">
+                  <label class="form-label">精度设置</label>
+                  <select v-model="terrainAccuracy" class="form-select">
+                    <option value="low">低精度</option>
+                    <option value="medium">中精度</option>
+                    <option value="high">高精度</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary w-100" @click="analyzeTerrain">
+                  分析地形
+                </button>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">分析类型:</span>
-              <span class="result-value">{{ areaResult.type }}</span>
+            <div class="col-md-6">
+              <div class="tool-result card bg-light p-4 rounded-lg">
+                <h3 class="h6 mb-3">地形分析结果</h3>
+                <div v-if="terrainResult" class="result-content bg-white p-3 rounded border">
+                  <div class="result-item d-flex justify-content-between py-2 border-bottom" v-for="(item, key) in terrainResult" :key="key">
+                    <span class="result-label text-muted">{{ key === 'area' ? '分析区域:' : key === 'type' ? '分析类型:' : key === 'accuracy' ? '精度设置:' : key === 'data' ? '分析结果:' : '分析时间:' }}</span>
+                    <span class="result-value font-weight-medium">{{ item }}</span>
+                  </div>
+                </div>
+                <div v-else class="result-placeholder d-flex flex-column align-items-center justify-content-center p-5 bg-white rounded border border-dashed">
+                  <span class="fs-1 mb-3">⛰️</span>
+                  <p class="text-muted text-center">点击"分析地形"查看分析结果</p>
+                </div>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">分析半径:</span>
-              <span class="result-value">{{ areaResult.radius }} 米</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析结果:</span>
-              <span class="result-value">{{ areaResult.score }} 分</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">评价:</span>
-              <span class="result-value">{{ areaResult.evaluation }}</span>
-            </div>
-          </div>
-          <div v-else class="result-placeholder">
-            <span>📊</span>
-            <p>点击"分析区域"查看分析结果</p>
           </div>
         </div>
-      </div>
 
-      <!-- 地形分析工具 -->
-      <div v-else-if="activeCategory === 'terrain'" class="tool-panel">
-        <div class="tool-form">
-          <div class="form-group">
-            <label>分析区域</label>
-            <input type="text" v-model="terrainArea" placeholder="输入地形区域" />
-          </div>
-          <div class="form-group">
-            <label>分析类型</label>
-            <select v-model="terrainAnalysisType">
-              <option value="elevation">高程分析</option>
-              <option value="slope">坡度分析</option>
-              <option value="aspect">坡向分析</option>
-              <option value="viewshed">可视域分析</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>精度设置</label>
-            <select v-model="terrainAccuracy">
-              <option value="low">低精度</option>
-              <option value="medium">中精度</option>
-              <option value="high">高精度</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" @click="analyzeTerrain">
-            分析地形
-          </button>
-        </div>
-        <div class="tool-result">
-          <h3>地形分析结果</h3>
-          <div v-if="terrainResult" class="result-content">
-            <div class="result-item">
-              <span class="result-label">分析区域:</span>
-              <span class="result-value">{{ terrainResult.area }}</span>
+        <!-- 网络分析工具 -->
+        <div v-else-if="activeCategory === 'network'" class="tool-panel">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="tool-form card bg-light p-4 rounded-lg">
+                <div class="form-group mb-3">
+                  <label class="form-label">分析中心点</label>
+                  <input type="text" v-model="networkCenter" class="form-control" placeholder="输入中心点" />
+                </div>
+                <div class="form-group mb-3">
+                  <label class="form-label">分析类型</label>
+                  <select v-model="networkAnalysisType" class="form-select">
+                    <option value="service">服务范围</option>
+                    <option value="closest">最近设施</option>
+                    <option value="isochrone">等时圈</option>
+                    <option value="accessibility">可达性分析</option>
+                  </select>
+                </div>
+                <div class="form-group mb-4">
+                  <label class="form-label">分析参数</label>
+                  <input type="number" v-model="networkParameter" class="form-control" placeholder="输入分析参数" />
+                </div>
+                <button class="btn btn-primary w-100" @click="analyzeNetwork">
+                  分析网络
+                </button>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">分析类型:</span>
-              <span class="result-value">{{ terrainResult.type }}</span>
+            <div class="col-md-6">
+              <div class="tool-result card bg-light p-4 rounded-lg">
+                <h3 class="h6 mb-3">网络分析结果</h3>
+                <div v-if="networkResult" class="result-content bg-white p-3 rounded border">
+                  <div class="result-item d-flex justify-content-between py-2 border-bottom" v-for="(item, key) in networkResult" :key="key">
+                    <span class="result-label text-muted">{{ key === 'center' ? '中心点:' : key === 'type' ? '分析类型:' : key === 'parameter' ? '分析参数:' : key === 'data' ? '分析结果:' : '覆盖范围:' }}</span>
+                    <span class="result-value font-weight-medium">{{ item }}</span>
+                  </div>
+                </div>
+                <div v-else class="result-placeholder d-flex flex-column align-items-center justify-content-center p-5 bg-white rounded border border-dashed">
+                  <span class="fs-1 mb-3">🌐</span>
+                  <p class="text-muted text-center">点击"分析网络"查看分析结果</p>
+                </div>
+              </div>
             </div>
-            <div class="result-item">
-              <span class="result-label">精度设置:</span>
-              <span class="result-value">{{ terrainResult.accuracy }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析结果:</span>
-              <span class="result-value">{{ terrainResult.data }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析时间:</span>
-              <span class="result-value">{{ terrainResult.time }}</span>
-            </div>
-          </div>
-          <div v-else class="result-placeholder">
-            <span>⛰️</span>
-            <p>点击"分析地形"查看分析结果</p>
           </div>
         </div>
-      </div>
 
-      <!-- 网络分析工具 -->
-      <div v-else-if="activeCategory === 'network'" class="tool-panel">
-        <div class="tool-form">
-          <div class="form-group">
-            <label>分析中心点</label>
-            <input type="text" v-model="networkCenter" placeholder="输入中心点" />
+        <!-- 默认提示 -->
+        <div v-else class="tool-panel">
+          <div class="empty-state d-flex flex-column align-items-center justify-content-center py-10 text-center">
+            <div class="empty-icon fs-1 mb-3">🔍</div>
+            <h3 class="h5 mb-2">选择分析工具</h3>
+            <p class="text-muted">从上方选择一个分析工具类别开始分析</p>
           </div>
-          <div class="form-group">
-            <label>分析类型</label>
-            <select v-model="networkAnalysisType">
-              <option value="service">服务范围</option>
-              <option value="closest">最近设施</option>
-              <option value="isochrone">等时圈</option>
-              <option value="accessibility">可达性分析</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>分析参数</label>
-            <input type="number" v-model="networkParameter" placeholder="输入分析参数" />
-          </div>
-          <button class="btn btn-primary" @click="analyzeNetwork">
-            分析网络
-          </button>
-        </div>
-        <div class="tool-result">
-          <h3>网络分析结果</h3>
-          <div v-if="networkResult" class="result-content">
-            <div class="result-item">
-              <span class="result-label">中心点:</span>
-              <span class="result-value">{{ networkResult.center }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析类型:</span>
-              <span class="result-value">{{ networkResult.type }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析参数:</span>
-              <span class="result-value">{{ networkResult.parameter }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">分析结果:</span>
-              <span class="result-value">{{ networkResult.data }}</span>
-            </div>
-            <div class="result-item">
-              <span class="result-label">覆盖范围:</span>
-              <span class="result-value">{{ networkResult.coverage }}</span>
-            </div>
-          </div>
-          <div v-else class="result-placeholder">
-            <span>🌐</span>
-            <p>点击"分析网络"查看分析结果</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 默认提示 -->
-      <div v-else class="tool-panel">
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          <h3>选择分析工具</h3>
-          <p>从上方选择一个分析工具类别开始分析</p>
         </div>
       </div>
     </div>
 
     <!-- 最近分析记录 -->
-    <div class="recent-analyses">
-      <div class="section-header">
-        <h2>最近分析记录</h2>
+    <div class="recent-analyses card shadow-sm rounded-lg">
+      <div class="card-header bg-light">
+        <h2 class="h5 mb-0">最近分析记录</h2>
       </div>
-      <div class="analysis-records">
-        <div class="record-item" v-for="(record, index) in recentAnalyses" :key="index">
-          <div class="record-icon">{{ record.icon }}</div>
-          <div class="record-content">
-            <div class="record-title">{{ record.title }}</div>
-            <div class="record-meta">
-              <span class="record-time">{{ record.time }}</span>
-              <span class="record-category">{{ record.category }}</span>
+      <div class="card-body">
+        <div class="analysis-records">
+          <div class="record-item card bg-light mb-3 p-3" v-for="(record, index) in recentAnalyses" :key="index">
+            <div class="d-flex align-items-center gap-3">
+              <div class="record-icon fs-3 rounded-circle bg-white w-12 h-12 d-flex align-items-center justify-content-center">
+                {{ record.icon }}
+              </div>
+              <div class="record-content flex-1">
+                <div class="record-title font-weight-medium">{{ record.title }}</div>
+                <div class="record-meta d-flex gap-3 text-muted small">
+                  <span class="record-time">{{ record.time }}</span>
+                  <span class="record-category">{{ record.category }}</span>
+                </div>
+              </div>
+              <button class="record-action btn btn-primary btn-sm" @click="viewAnalysisRecord(record)">查看</button>
             </div>
           </div>
-          <button class="record-action" @click="viewAnalysisRecord(record)">查看</button>
-        </div>
-        <div v-if="recentAnalyses.length === 0" class="empty-records">
-          <p>暂无分析记录</p>
+          <div v-if="recentAnalyses.length === 0" class="empty-records bg-light p-4 rounded text-center text-muted">
+            <p>暂无分析记录</p>
+          </div>
         </div>
       </div>
     </div>
@@ -598,339 +575,33 @@ export default {
   margin: 0 auto;
 }
 
-.page-header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.page-header h1 {
-  font-size: 28px;
-  color: var(--text-primary);
-  margin-bottom: 10px;
-}
-
-.page-header p {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* 工具分类 */
-.tool-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
 .category-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: 24px;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  border: 2px solid transparent;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .category-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.category-card.active {
-  border-color: var(--primary-color);
-  background: var(--primary-light);
-}
-
-.category-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.category-content h3 {
-  font-size: 18px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.category-content p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* 工具详情 */
-.tool-details {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: 24px;
-  margin-bottom: 40px;
-}
-
-.tool-panel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-}
-
-.tool-form {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border-normal);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  transition: border-color var(--transition-fast);
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: var(--primary-color);
-  outline: none;
-}
-
-.btn {
-  display: inline-block;
-  padding: 10px 24px;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-}
-
-.tool-result {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-}
-
-.tool-result h3 {
-  font-size: 16px;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-}
-
-.result-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  border: 2px dashed var(--border-light);
-}
-
-.result-placeholder span {
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.result-placeholder p {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin: 0;
-  text-align: center;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
-}
-
-.empty-state .empty-icon {
-  font-size: 72px;
-  margin-bottom: 20px;
-}
-
-.empty-state h3 {
-  font-size: 20px;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.empty-state p {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* 最近分析记录 */
-.recent-analyses {
-  background: var(--bg-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: 24px;
-}
-
-.analysis-records {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.category-card.active .card {
+  border-color: #007bff;
+  background-color: #e3f2fd;
 }
 
 .record-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .record-item:hover {
-  background: var(--bg-tertiary);
   transform: translateX(4px);
-}
-
-.record-icon {
-  font-size: 24px;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-primary);
-  border-radius: 50%;
-}
-
-.record-content {
-  flex: 1;
-}
-
-.record-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.record-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-light);
-}
-
-.record-action {
-  padding: 6px 12px;
-  border: 1px solid var(--primary-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary);
-  color: var(--primary-color);
-  font-size: 12px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.record-action:hover {
-  background: var(--primary-color);
-  color: white;
-}
-
-/* 分析结果 */
-.result-content {
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  border: 1px solid var(--border-light);
-}
-
-.result-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.result-item:last-child {
-  border-bottom: none;
-}
-
-.result-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.result-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* 空记录状态 */
-.empty-records {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px dashed var(--border-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .analysis-tools {
     padding: 10px;
-  }
-
-  .tool-categories {
-    grid-template-columns: 1fr;
-  }
-
-  .tool-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .category-card {
-    padding: 20px;
-  }
-
-  .tool-form,
-  .tool-result {
-    padding: 20px;
   }
 }
 </style>

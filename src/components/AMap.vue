@@ -1,16 +1,18 @@
 <template>
   <div class="map-container">
     <div ref="mapContainer" class="map"></div>
-    <div class="map-controls">
-      <button @click="zoomIn" class="control-btn">
-        <span>+</span>
-      </button>
-      <button @click="zoomOut" class="control-btn">
-        <span>-</span>
-      </button>
-      <button @click="resetView" class="control-btn">
-        <span>重置</span>
-      </button>
+    <div class="map-controls position-absolute top-3 right-3 z-10">
+      <div class="d-flex flex-column gap-2">
+        <button @click="zoomIn" class="btn btn-light btn-sm border shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <span class="fw-bold">+</span>
+        </button>
+        <button @click="zoomOut" class="btn btn-light btn-sm border shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <span class="fw-bold">-</span>
+        </button>
+        <button @click="resetView" class="btn btn-light btn-sm border shadow-sm" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 10px;">重置</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -55,7 +57,7 @@ export default {
         }
 
         if (mapConfig.key === '您的高德地图API密钥') {
-          console.warn('使用默认API密钥，地图可能无法正常显示，请替换为真实的API密钥')
+          console.warn('使用默认API密钥,地图可能无法正常显示,请替换为真实的API密钥')
           // 显示错误提示
           const errorDiv = document.createElement('div')
           errorDiv.style.cssText = `
@@ -240,45 +242,5 @@ export default {
 .map {
   width: 100%;
   height: 100%;
-}
-
-.map-controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 100;
-}
-
-.control-btn {
-  width: 36px;
-  height: 36px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.control-btn:hover {
-  background: #f5f5f5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.control-btn span {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.control-btn:nth-child(3) span {
-  font-size: 12px;
-  font-weight: normal;
 }
 </style>
