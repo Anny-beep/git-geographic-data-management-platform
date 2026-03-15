@@ -63,14 +63,7 @@
               <div class="card h-100">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                   <h2 class="h5 mb-0">地图可视化</h2>
-                  <div class="map-tools d-flex gap-2">
-                    <button @click="toggleLayerControl" class="btn btn-outline-primary btn-sm">
-                      图层控制
-                    </button>
-                    <button @click="toggleDataOverlay" class="btn btn-outline-primary btn-sm">
-                      数据叠加
-                    </button>
-                  </div>
+
                 </div>
                 <div class="card-body p-0" style="height: calc(100vh - 250px);">
                   <AMap
@@ -122,14 +115,16 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import AMap from './components/AMap.vue'
-import DataChart from './components/DataChart.vue'
-import DataCenter from './components/DataCenter.vue'
-import AnalysisTools from './components/AnalysisTools.vue'
-import Settings from './components/Settings.vue'
-import FooterLinks from './components/FooterLinks.vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { mapConfig } from './config/map'
+
+// 懒加载组件
+const AMap = defineAsyncComponent(() => import('./components/AMap.vue'))
+const DataChart = defineAsyncComponent(() => import('./components/DataChart.vue'))
+const DataCenter = defineAsyncComponent(() => import('./components/DataCenter.vue'))
+const AnalysisTools = defineAsyncComponent(() => import('./components/AnalysisTools.vue'))
+const Settings = defineAsyncComponent(() => import('./components/Settings.vue'))
+const FooterLinks = defineAsyncComponent(() => import('./components/FooterLinks.vue'))
 
 export default {
   name: 'App',
@@ -145,8 +140,6 @@ export default {
     const mapRef = ref(null)
     const mapCenter = ref(mapConfig.center)
     const mapZoom = ref(mapConfig.zoom)
-    const layerControlVisible = ref(false)
-    const dataOverlayVisible = ref(false)
     const activeNavItem = ref('home')
 
     // 导航菜单点击处理
@@ -192,17 +185,7 @@ export default {
       })
     }
 
-    // 切换图层控制
-    const toggleLayerControl = () => {
-      layerControlVisible.value = !layerControlVisible.value
-      console.log('图层控制:', layerControlVisible.value)
-    }
 
-    // 切换数据叠加
-    const toggleDataOverlay = () => {
-      dataOverlayVisible.value = !dataOverlayVisible.value
-      console.log('数据叠加:', dataOverlayVisible.value)
-    }
 
     onMounted(() => {
       console.log('应用初始化完成')
@@ -215,8 +198,6 @@ export default {
       activeNavItem,
       onMapLoaded,
       onMapClick,
-      toggleLayerControl,
-      toggleDataOverlay,
       handleNavClick
     }
   }

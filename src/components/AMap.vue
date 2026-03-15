@@ -85,7 +85,7 @@ export default {
         const AMap = await AMapLoader.load({
           key: mapConfig.key,
           version: '2.0',
-          plugins: ['AMap.ToolBar', 'AMap.Scale', 'AMap.HawkEye'],
+          plugins: ['AMap.ToolBar', 'AMap.Scale', 'AMap.HawkEye', 'AMap.MarkerClusterer', 'AMap.MassMarks'],
           AMapUI: {
             version: '1.1',
             plugins: []
@@ -186,6 +186,112 @@ export default {
       })
       markers = []
     }
+    
+    // 批量添加标记（支持万级点位）
+    const addMarkers = (markerDataList, options = {}) => {
+      if (!map) return null
+      
+      // 如果数据量小于1000，使用普通Marker
+      if (markerDataList.length < 1000) {
+        return addNormalMarkers(markerDataList, options)
+      }
+      // 如果数据量大于等于1000，使用MarkerClusterer或MassMarks
+      else if (markerDataList.length < 10000) {
+        return addMarkerClusterer(markerDataList, options)
+      }
+      // 如果数据量大于等于10000，使用MassMarks
+      else {
+        return addMassMarks(markerDataList, options)
+      }
+    }
+    
+    // 添加普通标记
+    const addNormalMarkers = (markerDataList, options = {}) => {
+      const addedMarkers = []
+      
+      markerDataList.forEach(markerData => {
+        const marker = new window.AMap.Marker({
+          position: markerData.position || [markerData.lng, markerData.lat],
+          title: markerData.title,
+          icon: markerData.icon || options.icon,
+          ...options
+        })
+        
+        marker.setMap(map)
+        markers.push(marker)
+        addedMarkers.push(marker)
+      })
+      
+      return addedMarkers
+    }
+    
+    // 添加标记集群
+    const addMarkerClusterer = (markerDataList, options = {}) => {
+      const markerList = []
+      
+      // 创建标记
+      markerDataList.forEach(markerData => {
+        const marker = new window.AMap.Marker({
+          position: markerData.position || [markerData.lng, markerData.lat],
+          title: markerData.title,
+          icon: markerData.icon || options.icon
+        })
+        markerList.push(marker)
+        markers.push(marker)
+      })
+      
+      // 创建集群
+      const clusterer = new window.AMap.MarkerClusterer(map, markerList, {
+        gridSize: options.gridSize || 80,
+        maxZoom: options.maxZoom || 18,
+        zoomOnClick: options.zoomOnClick !== false,
+        styles: options.styles || [
+          {
+            url: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+            size: new window.AMap.Size(32, 32),
+            offset: new window.AMap.Pixel(-16, -16)
+          }
+        ]
+      })
+      
+      return clusterer
+    }
+    
+    // 添加海量点
+    const addMassMarks = (markerDataList, options = {}) => {
+      // 转换数据格式
+      const massData = markerDataList.map(markerData => ({
+        lnglat: markerData.position || [markerData.lng, markerData.lat],
+        name: markerData.title,
+        ...markerData
+      }))
+      
+      // 创建海量点
+      const massMarks = new window.AMap.MassMarks(massData, {
+        zIndex: options.zIndex || 5,
+        opacity: options.opacity || 0.8,
+        size: options.size || new window.AMap.Size(10, 10),
+        anchor: options.anchor || new window.AMap.Pixel(5, 5),
+        cursor: options.cursor || 'pointer',
+        style: options.style || [
+          {
+            url: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+            size: new window.AMap.Size(10, 10),
+            anchor: new window.AMap.Pixel(5, 5)
+          }
+        ]
+      })
+      
+      massMarks.setMap(map)
+      
+      // 监听点击事件
+      massMarks.on('click', (e) => {
+        console.log('海量点点击:', e)
+        // 可以在这里添加点击事件处理逻辑
+      })
+      
+      return massMarks
+    }
 
     // 监听属性变化
     watch(() => props.center, (newCenter) => {
@@ -217,13 +323,26 @@ export default {
       }
     })
 
+    // 更新地图图层
+    const updateLayers = (layers) => {
+      console.log('图层控制功能已移除')
+    }
+    
+    // 更新数据叠加
+    const updateDataOverlays = (datasets) => {
+      console.log('数据叠加功能已移除')
+    }
+    
     return {
       mapContainer,
       zoomIn,
       zoomOut,
       resetView,
       addMarker,
-      clearMarkers
+      addMarkers,
+      clearMarkers,
+      updateLayers,
+      updateDataOverlays
     }
   }
 }
