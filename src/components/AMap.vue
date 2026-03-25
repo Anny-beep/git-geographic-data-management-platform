@@ -21,6 +21,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { mapConfig } from '../config/map'
+import { debounce, throttle } from '../utils/debounce'
 
 export default {
   name: 'AMap',
@@ -112,10 +113,11 @@ export default {
         // 触发地图加载完成事件
         emit('map-loaded', map)
 
-        // 监听地图点击事件
-        map.on('click', (e) => {
+        // 监听地图点击事件（使用节流优化）
+        const throttledMapClick = throttle((e) => {
           emit('map-click', e)
-        })
+        }, 500)
+        map.on('click', throttledMapClick)
 
       } catch (error) {
         console.error('地图初始化失败:', error)
@@ -188,7 +190,7 @@ export default {
     }
     
     // 批量添加标记（支持万级点位）
-    const addMarkers = (markerDataList, options = {}) => {
+    const addMarkers = throttle((markerDataList, options = {}) => {
       if (!map) return null
       
       // 如果数据量小于1000，使用普通Marker
@@ -203,7 +205,7 @@ export default {
       else {
         return addMassMarks(markerDataList, options)
       }
-    }
+    }, 1000)
     
     // 添加普通标记
     const addNormalMarkers = (markerDataList, options = {}) => {

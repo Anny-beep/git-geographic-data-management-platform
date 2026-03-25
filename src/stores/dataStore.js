@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { debounce, throttle } from '../utils/debounce'
 
 // 数据管理的store
 export const useDataStore = defineStore('data', {
@@ -132,8 +133,8 @@ export const useDataStore = defineStore('data', {
       return false
     },
 
-    // 导入数据
-    importData(file) {
+    // 导入数据（使用节流优化）
+    importData: throttle(function(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader()
         
@@ -215,10 +216,10 @@ export const useDataStore = defineStore('data', {
         
         reader.readAsText(file)
       })
-    },
+    }, 1000),
 
-    // 导出数据
-    exportData() {
+    // 导出数据（使用节流优化）
+    exportData: throttle(function() {
       const exportData = {
         timestamp: new Date().toISOString(),
         data: this.dataList,
@@ -238,17 +239,17 @@ export const useDataStore = defineStore('data', {
       URL.revokeObjectURL(url)
       
       return exportData
-    },
+    }, 1000),
 
-    // 清空所有数据
-    clearData() {
+    // 清空所有数据（使用节流优化）
+    clearData: throttle(function() {
       this.dataList = []
-    },
+    }, 500),
 
-    // 批量导入数据
-    importMultipleData(files) {
+    // 批量导入数据（使用节流优化）
+    importMultipleData: throttle(function(files) {
       const promises = files.map(file => this.importData(file))
       return Promise.all(promises)
-    }
+    }, 2000)
   }
 })

@@ -164,6 +164,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useDataStore } from '../stores/dataStore'
 import * as echarts from 'echarts'
+import { debounce, throttle } from '../utils/debounce'
 
 export default {
   name: 'DataCenter',
@@ -270,8 +271,8 @@ export default {
       }
     }
 
-    // 更新类型分布图表
-    const updateTypeChart = () => {
+    // 更新类型分布图表（使用防抖优化）
+    const updateTypeChart = debounce(() => {
       if (!typeChart) return
       
       const option = {
@@ -312,7 +313,7 @@ export default {
       }
       
       typeChart.setOption(option)
-    }
+    }, 300)
 
     // 初始化状态分布图表
     const initStatusChart = () => {
@@ -322,8 +323,8 @@ export default {
       }
     }
 
-    // 更新状态分布图表
-    const updateStatusChart = () => {
+    // 更新状态分布图表（使用防抖优化）
+    const updateStatusChart = debounce(() => {
       if (!statusChart) return
       
       const option = {
@@ -365,7 +366,7 @@ export default {
       }
       
       statusChart.setOption(option)
-    }
+    }, 300)
 
     // 初始化更新趋势图表
     const initUpdateChart = () => {
@@ -375,8 +376,8 @@ export default {
       }
     }
 
-    // 更新更新趋势图表
-    const updateUpdateChart = () => {
+    // 更新更新趋势图表（使用防抖优化）
+    const updateUpdateChart = debounce(() => {
       if (!updateChart) return
       
       const option = {
@@ -426,7 +427,7 @@ export default {
       }
       
       updateChart.setOption(option)
-    }
+    }, 300)
 
     // 监听数据变化
     watch(
@@ -461,8 +462,8 @@ export default {
       })
     })
 
-    // 导入数据功能
-    const importData = async () => {
+    // 导入数据功能（使用节流优化）
+    const importData = throttle(async () => {
       // 创建文件输入元素
       const input = document.createElement('input')
       input.type = 'file'
@@ -484,13 +485,13 @@ export default {
       }
       
       input.click()
-    }
+    }, 1000)
 
-    // 导出数据功能
-    const exportData = () => {
+    // 导出数据功能（使用节流优化）
+    const exportData = throttle(() => {
       dataStore.exportData()
       alert('数据导出成功')
-    }
+    }, 1000)
 
     // 查看数据功能
     const viewData = (item) => {
@@ -498,8 +499,8 @@ export default {
       alert(`查看数据: ${item.name}\n类型: ${item.type}\n大小: ${item.size}\n更新时间: ${item.updateTime}\n状态: ${item.statusText}`)
     }
 
-    // 编辑数据功能
-    const editData = (item, index) => {
+    // 编辑数据功能（使用节流优化）
+    const editData = throttle((item, index) => {
       console.log('编辑数据:', item, index)
       const newName = prompt('请输入新的数据名称:', item.name)
       if (newName && newName.trim() !== '') {
@@ -528,10 +529,10 @@ export default {
           alert('数据编辑失败')
         }
       }
-    }
+    }, 500)
 
-    // 删除数据功能
-    const deleteData = (item, index) => {
+    // 删除数据功能（使用节流优化）
+    const deleteData = throttle((item, index) => {
       if (confirm(`确定要删除数据: ${item.name}吗？`)) {
         const success = dataStore.deleteData(index)
         if (success) {
@@ -540,7 +541,7 @@ export default {
           alert('数据删除失败')
         }
       }
-    }
+    }, 500)
 
     return {
       activeDataTab,
